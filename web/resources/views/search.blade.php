@@ -21,7 +21,7 @@
     </div>
     <div class="row">
         <h6 class="text-muted">
-            Basic crawling utility, described <a href="https://tharba.kim/">over here</a>.
+            Basic crawling utility, described <a href="https://tharba.kim/laravel-web-crawler/">over here</a>.
         </h6>
     </div>
     <div class="input-group">
