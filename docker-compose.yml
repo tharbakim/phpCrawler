@@ -1,0 +1,8 @@
+version: "3"
+services:
+  php-crawler:
+    build: "."
+    volumes:
+      - "./web:/var/www/html"
+    ports:
+      - "8086:80"
