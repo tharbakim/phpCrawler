@@ -5,4 +5,6 @@ services:
     volumes:
       - "./web:/var/www/html"
     ports:
-      - "8086:80"
+      - "8088:8088"
+    environment:
+      - PORT=8088
