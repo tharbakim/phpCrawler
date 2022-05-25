@@ -1,14 +1,23 @@
-const { result } = require('lodash');
-
 require('./bootstrap');
 
+// Submit button to trigger search/scan
 const submit = document.getElementById('search-submit')
+
+// Container for result elements
 const resultContainer = document.getElementById('result-container')
+
+//Container for loading display elements
 const loadingContainer = document.getElementById('loading-container')
+
+// The collapseable DOM element
 const resultContainerCollapseElement = document.getElementById('result-container-collapse')
+
+// The bootstrap Collapse object
 const resultContainerCollapse = new bootstrap.Collapse(resultContainerCollapseElement, {
     toggle: false
 })
+
+///Fires when ANY collapse element from Bootstrap is fully collapses
 resultContainerCollapseElement.addEventListener('hidden.bs.collapse', () => {
     if (resultContainer.classList.contains('hidden')) {
         resultContainer.classList.remove('hidden')
@@ -17,6 +26,7 @@ resultContainerCollapseElement.addEventListener('hidden.bs.collapse', () => {
     resultContainerCollapse.show()
 })
 
+// Fires when ANY collapse element from Bootstrap is fully visible
 resultContainerCollapseElement.addEventListener('shown.bs.collapse', () => {
     fetch(`/api/crawl/${resultContainerCollapse.depth}/${resultContainerCollapse.url}`)
         .then(response => {
@@ -24,10 +34,11 @@ resultContainerCollapseElement.addEventListener('shown.bs.collapse', () => {
         })
         .then(data => {
 
+            // Check for an error being present instead of completed data.
             if (data.hasOwnProperty('status') && data.status == false) {
                 document.getElementById('loading-container').innerHTML = `<h2 class='text-danger'>ERROR: ${data.message}</h2>`
             } else {
-
+                // Hide the loading Container now that we have the results
                 loadingContainer.classList.add('invisible')
                 document.getElementById('scan-title').innerHTML = data[0].pageUrl
                 document.getElementById('scan-page-count').innerHTML = data.length
@@ -42,26 +53,28 @@ resultContainerCollapseElement.addEventListener('shown.bs.collapse', () => {
         })
 })
 
+//Convert the HTTP status into a coloured badge
 statusToBadge = (status) => {
-    console.log(status)
-    statusType = (status % 100)
-    if (statusType == '2') {
+    statusType = (Math.floor(parseInt(status)/100))
+    if (statusType == 2) {
         return `<span class="badge bg-success">${status}</span>`
-    } else if (statusType == '4') {
+    } else if (statusType == 4) {
         return `<span class="badge bg-warning">${status}</span>`
-    } else if (statusType == '5') {
+    } else if (statusType == 5) {
         return `<span class="badge bg-danger">${status}</span>`
     } else {
         return `<span class="badge bg-secondary">${status}</span>`
     }
 }
 
+// Function to handle kicking off a new search/crawl
 loadCrawl = (depth, url) => {
     resultContainerCollapse.depth = depth
     resultContainerCollapse.url = url
     resultContainerCollapse.hide()
 }
 
+// Averages the value "property" across a returned array of JSON representing Webpage objects from our backend
 averageResultSet = (obj, property) => {
     let count = 0
     let iter = 0
@@ -72,6 +85,7 @@ averageResultSet = (obj, property) => {
     return count / iter
 }
 
+// Merge the value "property" across a returned array of JSON representing Webpage objects from our backend
 mergeResultSet = (obj, property) => {
     unique = (value, index, self) => {
         return self.indexOf(value) === index
@@ -81,16 +95,14 @@ mergeResultSet = (obj, property) => {
         if (Array.isArray(item[property])) {
         result = result.concat(item[property])
         } else {
-
+            // Special handling for when the json handler in PHP converts an array into an object.
         result = result.concat(Object.entries(item[property]))
         }
     })
-    console.log(result)
-    const out = result.filter(unique)
-    console.log(out)
-    return out
+    return result.filter(unique)
 }
 
+// Revert all output values to placeholder elements
 resetResults = () => {
     loadingContainer.classList.remove('invisible')
     document.getElementById('loading-container').innerHTML = '<div class="spinner-border"></div><h5>Loading...</h5>'
@@ -105,6 +117,7 @@ resetResults = () => {
     document.getElementById('scan-table-body').innerHTML = '<tr><td><span class="placeholder col-6"></span></td><td><span class="placeholder col-2"></span></td></tr>'
 }
 
+// Onload event to trigger a search if there are valid parameters passed as part of the URL on first page load.
 window.onload = () => {
     const urlComponents = window.location.href.split('/')
 
@@ -117,6 +130,7 @@ window.onload = () => {
     }
 }
 
+// Event handler for submitting a request for a new search/scan
 submit.addEventListener('click', () => {
     const url = document.getElementById('search-url')
     const depth = document.getElementById('search-url-depth')
